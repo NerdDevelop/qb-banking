@@ -1,0 +1,446 @@
+<!-- ╔══════════════════════════════════════════════════════════╗
+     ║                  qb-banking — by Nerd                    ║
+     ║          Developed & maintained by Nerd Studio           ║
+     ║              Released under © Nerd 2026                  ║
+     ╚══════════════════════════════════════════════════════════╝ -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fleeca Bank</title>
+<link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css?v=2" />
+</head>
+<body>
+<div id="root" class="hidden">
+
+    <!-- ==================================================== -->
+    <!-- ATM VIEW                                              -->
+    <!-- ==================================================== -->
+    <div id="atm" class="atm hidden">
+        <div class="atm-card">
+
+            <div class="atm-head">
+                <div class="atm-brand">
+                    <div>
+                        <div class="sidebar-title">FLEECA<span> ATM</span></div>
+                        <div class="sidebar-sub" id="atmStep">Select Account</div>
+                    </div>
+                </div>
+                <button class="dlg-close" data-close><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- step 1: pick account -->
+            <div class="atm-stage" data-stage="pick">
+                <div class="acc-list" id="atmAccList"></div>
+                <div class="atm-hint" id="atmNoAcc"></div>
+                <div class="atm-row">
+                    <button class="dlg-btn cancel" id="atmQuickBtn"><i class="fas fa-eye"></i> Quick Balance</button>
+                </div>
+            </div>
+
+            <!-- step 2: enter pin -->
+            <div class="atm-stage hidden" data-stage="pin">
+                <div class="acc-tiny" id="atmAccTitle"></div>
+                <div class="pin-display" id="atmPinDisplay"></div>
+                <div class="pin-pad">
+                    <button data-key="1">1</button><button data-key="2">2</button><button data-key="3">3</button>
+                    <button data-key="4">4</button><button data-key="5">5</button><button data-key="6">6</button>
+                    <button data-key="7">7</button><button data-key="8">8</button><button data-key="9">9</button>
+                    <button data-key="back" class="warn"><i class="fas fa-delete-left"></i></button>
+                    <button data-key="0">0</button>
+                    <button data-key="ok" class="primary"><i class="fas fa-check"></i></button>
+                </div>
+                <div class="atm-row">
+                    <button class="dlg-btn cancel" data-back><i class="fas fa-arrow-left"></i> Back</button>
+                </div>
+                <div class="atm-error" id="atmError"></div>
+            </div>
+
+            <!-- step 3: actions -->
+            <div class="atm-stage hidden" data-stage="ops">
+                <div class="balance-card">
+                    <div class="bc-label"><i class="fas fa-vault"></i> Balance</div>
+                    <div class="bc-value" id="atmBalance">$0</div>
+                    <div class="bc-sub" id="atmAccSub"></div>
+                </div>
+                <div class="ops-row">
+                    <button class="op-btn op-deposit" data-op="deposit">
+                        <span class="op-ic"><i class="fas fa-arrow-up"></i></span>
+                        <span>Deposit</span>
+                    </button>
+                    <button class="op-btn op-withdraw" data-op="withdraw">
+                        <span class="op-ic"><i class="fas fa-arrow-down"></i></span>
+                        <span>Withdraw</span>
+                    </button>
+                </div>
+                <div class="atm-amount hidden" id="atmAmountWrap">
+                    <div class="fin-input-wrap">
+                        <span class="fin-currency">$</span>
+                        <input type="number" id="atmAmount" min="1" placeholder="0" class="fin-input" />
+                    </div>
+                    <div class="fin-quick-amounts">
+                        <button class="quick-amt" data-amt="100">$100</button>
+                        <button class="quick-amt" data-amt="500">$500</button>
+                        <button class="quick-amt" data-amt="1000">$1K</button>
+                        <button class="quick-amt" data-amt="5000">$5K</button>
+                        <button class="quick-amt" data-amt="max">MAX</button>
+                    </div>
+                    <div class="atm-row">
+                        <button class="dlg-btn cancel" id="atmAmtCancel">Cancel</button>
+                        <button class="dlg-btn confirm" id="atmAmtOk"><i class="fas fa-check"></i> Confirm</button>
+                    </div>
+                </div>
+                <div class="atm-row">
+                    <button class="dlg-btn cancel" data-back-ops><i class="fas fa-right-left"></i> Switch Account</button>
+                </div>
+                <div class="atm-meta" id="atmMeta"></div>
+            </div>
+
+            <!-- quick balance -->
+            <div class="atm-stage hidden" data-stage="quick">
+                <div class="acc-tiny">Enter the account number to peek at the balance.</div>
+                <input type="text" id="quickInput" class="field-input" placeholder="0000-0000-0000" />
+                <div class="atm-row">
+                    <button class="dlg-btn cancel" data-back><i class="fas fa-arrow-left"></i> Back</button>
+                    <button class="dlg-btn confirm" id="quickGo"><i class="fas fa-magnifying-glass"></i> Check</button>
+                </div>
+                <div class="quick-out" id="quickOut"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- BANK VIEW                                             -->
+    <!-- ==================================================== -->
+    <div id="bank" class="bank hidden">
+        <div class="container">
+
+            <!-- ============== content (LEFT) ============== -->
+            <main class="content">
+
+                <!-- OVERVIEW -->
+                <section class="page active" data-page="overview">
+                    <div class="page-head">
+                        <h1><i class="fas fa-vault"></i> Overview</h1>
+                        <div class="head-right">
+                            <div class="time-display" id="time">--:--</div>
+                        </div>
+                    </div>
+
+                    <div class="cards-row">
+                        <div class="info-card balance">
+                            <div class="ic-icon"><i class="fas fa-vault"></i></div>
+                            <div class="ic-label">Total Balance</div>
+                            <div class="ic-value" id="d-total">$0</div>
+                            <div class="ic-trend"><i class="fas fa-arrow-trend-up"></i></div>
+                        </div>
+                        <div class="info-card employees">
+                            <div class="ic-icon"><i class="fas fa-folder-open"></i></div>
+                            <div class="ic-label">Accounts</div>
+                            <div class="ic-value" id="d-accounts">0</div>
+                        </div>
+                        <div class="info-card onduty">
+                            <div class="ic-icon"><i class="fas fa-users"></i></div>
+                            <div class="ic-label">Joint</div>
+                            <div class="ic-value" id="d-joint">0</div>
+                        </div>
+                        <div class="info-card online">
+                            <div class="ic-icon"><i class="fas fa-shield-halved"></i></div>
+                            <div class="ic-label">Active</div>
+                            <div class="ic-value" id="d-active">0</div>
+                        </div>
+                    </div>
+
+                    <div class="dash-grid single">
+                        <div class="dash-box">
+                            <h3><i class="fas fa-list"></i> Your Accounts</h3>
+                            <div class="emp-container no-border">
+                                <div class="emp-header">
+                                    <div class="emp-th name">Account</div>
+                                    <div class="emp-th cid">Number</div>
+                                    <div class="emp-th grade">Type</div>
+                                    <div class="emp-th salary">Balance</div>
+                                    <div class="emp-th actions">Actions</div>
+                                </div>
+                                <div class="emp-body" id="accList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TRANSFER -->
+                <section class="page" data-page="transfer">
+                    <div class="page-head">
+                        <h1><i class="fas fa-arrow-right-arrow-left"></i> Transfer</h1>
+                        <div class="head-right">
+                            <div class="time-display" id="time2">--:--</div>
+                        </div>
+                    </div>
+
+                    <div class="dash-grid single">
+                        <div class="dash-box">
+                            <h3><i class="fas fa-paper-plane"></i> Send Money</h3>
+
+                            <div class="field">
+                                <label>From Account</label>
+                                <select id="trFrom" class="field-select"></select>
+                            </div>
+
+                            <div class="field">
+                                <label>Recipient Type</label>
+                                <div class="filter-pills">
+                                    <button class="pill active" data-tt="player_id"><i class="fas fa-user"></i> Player ID</button>
+                                    <button class="pill" data-tt="citizen_id"><i class="fas fa-id-card"></i> Citizen ID</button>
+                                    <button class="pill" data-tt="own_account"><i class="fas fa-folder"></i> Own Account</button>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label id="trTargetLabel">Player Server ID</label>
+                                <input  type="text"   id="trTargetValue"  class="field-input"  placeholder="e.g. 4" />
+                                <select               id="trTargetSelect" class="field-select hidden"></select>
+
+                                <div class="contacts-strip" id="trContacts">
+                                    <div class="contacts-label"><i class="fas fa-address-book"></i> Saved contacts</div>
+                                    <div class="contacts-chips" id="trContactsChips"></div>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label>Amount</label>
+                                <div class="fin-input-wrap">
+                                    <span class="fin-currency">$</span>
+                                    <input type="number" id="trAmount" min="1" placeholder="0" class="fin-input" />
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label>Note <span class="opt">(optional)</span></label>
+                                <input type="text" id="trNote" class="field-input" maxlength="120" placeholder="" />
+                            </div>
+
+                            <div class="field">
+                                <label>PIN</label>
+                                <input type="password" id="trPin" class="field-input" maxlength="4" placeholder="••••" />
+                            </div>
+
+                            <button class="main-btn full" id="trSend"><i class="fas fa-paper-plane"></i> Send Transfer</button>
+                            <div class="form-error" id="trError"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- CONTACTS -->
+                <section class="page" data-page="contacts">
+                    <div class="page-head">
+                        <h1><i class="fas fa-address-book"></i> Contacts</h1>
+                    </div>
+                    <div class="dash-grid single">
+                        <div class="dash-box">
+                            <h3><i class="fas fa-users"></i> Saved Recipients</h3>
+                            <div id="contactsList"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- HISTORY -->
+                <section class="page" data-page="history">
+                    <div class="page-head">
+                        <h1><i class="fas fa-clock-rotate-left"></i> History</h1>
+                        <div class="head-actions">
+                            <select id="histSelect" class="field-select inline"></select>
+                            <button class="main-btn" id="histExport"><i class="fas fa-file-csv"></i> Export</button>
+                        </div>
+                    </div>
+
+                    <div class="hist-toolbar">
+                        <div class="search-input">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="histSearch" placeholder="Search note, recipient, amount…" />
+                            <button class="search-clear hidden" id="histSearchClear"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="filter-pills">
+                            <button class="pill active" data-hf="all">All</button>
+                            <button class="pill" data-hf="in"><i class="fas fa-arrow-up"></i> In</button>
+                            <button class="pill" data-hf="out"><i class="fas fa-arrow-down"></i> Out</button>
+                            <button class="pill" data-hf="transfer"><i class="fas fa-arrow-right-arrow-left"></i> Transfers</button>
+                            <button class="pill" data-hf="internal"><i class="fas fa-rotate"></i> Internal</button>
+                        </div>
+                    </div>
+
+                    <div class="history-box" id="histList">
+                        <div class="empty-box">
+                            <i class="fas fa-receipt"></i>
+                            <span>No transactions</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- NEW ACCOUNT -->
+                <section class="page" data-page="create">
+                    <div class="page-head">
+                        <h1><i class="fas fa-plus"></i> New Account</h1>
+                    </div>
+
+                    <div class="dash-grid single">
+                        <div class="dash-box">
+                            <h3><i class="fas fa-folder-plus"></i> Open an Account</h3>
+
+                            <div class="field">
+                                <label>Account Type</label>
+                                <div class="filter-pills">
+                                    <button class="pill active" data-newtype="individual"><i class="fas fa-user"></i> Individual</button>
+                                    <button class="pill" data-newtype="joint"><i class="fas fa-users"></i> Joint</button>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label>Account Name</label>
+                                <input type="text" id="newName" class="field-input" maxlength="48" placeholder="e.g. Personal Savings" />
+                            </div>
+
+                            <div class="field">
+                                <label>PIN <span class="opt">(4 digits)</span></label>
+                                <input type="password" id="newPin" class="field-input" maxlength="4" placeholder="••••" />
+                            </div>
+
+                            <div class="field">
+                                <label>Confirm PIN</label>
+                                <input type="password" id="newPin2" class="field-input" maxlength="4" placeholder="••••" />
+                            </div>
+
+                            <div class="fee-line" id="newFeeLine"></div>
+
+                            <button class="main-btn full" id="newSubmit"><i class="fas fa-check"></i> Create Account</button>
+                            <div class="form-error" id="newError"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- INVITATIONS -->
+                <section class="page" data-page="invitations">
+                    <div class="page-head">
+                        <h1><i class="fas fa-envelope"></i> Invitations</h1>
+                    </div>
+                    <div class="history-box" id="invList">
+                        <div class="empty-box">
+                            <i class="fas fa-envelope-open"></i>
+                            <span>No pending invitations</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SETTINGS -->
+                <section class="page" data-page="settings">
+                    <div class="page-head">
+                        <h1><i class="fas fa-gear"></i> Settings</h1>
+                        <div class="head-actions">
+                            <select id="setSelect" class="field-select inline"></select>
+                        </div>
+                    </div>
+                    <div id="setBox" class="settings-box">
+                        <div class="empty-box">
+                            <i class="fas fa-folder-open"></i>
+                            <span>Select an account</span>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+
+            <!-- ============== sidebar (RIGHT) ============== -->
+            <aside class="sidebar">
+                <div class="sidebar-brand">
+                    <div class="brand-icon"><i class="fas fa-building-columns"></i></div>
+                    <div class="brand-text">
+                        <div class="sidebar-title">FLEECA<span> BANK</span></div>
+                        <div class="sidebar-sub">Banking System</div>
+                    </div>
+                    <button class="privacy-btn" id="privacyBtn" title="Hide balance">
+                        <i class="fas fa-eye" id="privacyIcon"></i>
+                    </button>
+                </div>
+                <div class="sidebar-line"></div>
+
+                <!-- VIP Tier badge -->
+                <div class="vip-badge tier-standard" id="vipBadge">
+                    <div class="vip-icon"><i class="fas fa-user" id="vipIcon"></i></div>
+                    <div class="vip-info">
+                        <div class="vip-label">Membership</div>
+                        <div class="vip-name" id="vipName">Standard</div>
+                    </div>
+                </div>
+
+                <div class="balance-display">
+                    <div class="bal-label"><i class="fas fa-vault"></i> Total Balance</div>
+                    <div class="bal-value" id="s-total">$0</div>
+                </div>
+
+                <!-- Frozen balance (only visible when > 0) -->
+                <div class="frozen-display hidden" id="frozenDisplay">
+                    <div class="bal-label frozen"><i class="fas fa-snowflake"></i> Frozen Balance</div>
+                    <div class="bal-value frozen" id="s-frozen">$0</div>
+                    <button class="main-btn full" id="claimFrozenBtn" style="margin-top:6px">
+                        <i class="fas fa-hand-holding-dollar"></i> Claim
+                    </button>
+                </div>
+
+                <div class="stats-list">
+                    <div class="stat-row">
+                        <div class="stat-label"><i class="fas fa-wallet"></i> Cash</div>
+                        <div class="stat-val" id="s-cash">$0</div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-label"><i class="fas fa-folder"></i> Accounts</div>
+                        <div class="stat-val" id="s-accounts">0</div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-label"><i class="fas fa-users"></i> Joint</div>
+                        <div class="stat-val" id="s-joint">0</div>
+                    </div>
+                </div>
+
+                <nav class="nav-menu">
+                    <button class="nav-item active" data-tab="overview"><i class="fas fa-vault"></i> Overview</button>
+                    <button class="nav-item" data-tab="transfer"><i class="fas fa-arrow-right-arrow-left"></i> Transfer</button>
+                    <button class="nav-item" data-tab="contacts"><i class="fas fa-address-book"></i> Contacts</button>
+                    <button class="nav-item" data-tab="history"><i class="fas fa-clock-rotate-left"></i> History</button>
+                    <button class="nav-item" data-tab="create"><i class="fas fa-plus"></i> New Account</button>
+                    <button class="nav-item" data-tab="invitations">
+                        <i class="fas fa-envelope"></i> Invitations
+                        <span class="nav-badge hidden" id="invBadge">0</span>
+                    </button>
+                    <button class="nav-item" data-tab="settings"><i class="fas fa-gear"></i> Settings</button>
+                </nav>
+
+                <div class="exit-section">
+                    <button class="exit-btn" data-close><i class="fas fa-right-from-bracket"></i> Exit</button>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- ==================================================== -->
+    <!-- DIALOG / MODAL                                        -->
+    <!-- ==================================================== -->
+    <div class="dialog-wrap hidden" id="modal">
+        <div class="dialog-box">
+            <div class="dlg-head">
+                <h2 id="modalTitle"><i class="fas fa-circle-info"></i> Title</h2>
+                <button class="dlg-close" id="modalCancel"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="dlg-body" id="modalBody"></div>
+            <div class="dlg-foot">
+                <button class="dlg-btn cancel" id="modalCancelBtn">Cancel</button>
+                <button class="dlg-btn confirm" id="modalOk"><i class="fas fa-check"></i> Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- (toasts removed — notifications go through the in-house notify script) -->
+</div>
+<script src="script.js"></script>
+</body>
+</html>

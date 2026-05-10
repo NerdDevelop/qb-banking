@@ -1,0 +1,250 @@
+<!-- ╔══════════════════════════════════════════════════════════╗
+     ║                  qb-banking — by Nerd                    ║
+     ║          Developed & maintained by Nerd Studio           ║
+     ║              Released under © Nerd 2026                  ║
+     ╚══════════════════════════════════════════════════════════╝ -->
+<!DOCTYPE html>
+<!-- lang/dir set by JS once we detect lb-phone's language. -->
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Fleeca Bank</title>
+<link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+<div id="app">
+
+    <!-- ============== HEADER (compact, iOS-like) ============== -->
+    <header class="hdr">
+        <div class="hdr-title">
+            <span data-i18n="appName">Fleeca Bank</span>
+            <span class="hdr-tier" id="hdrTier"></span>
+        </div>
+        <button class="hdr-btn" id="refreshBtn" data-i18n-title="refresh" title="Refresh">
+            <i class="fas fa-rotate-right" id="refreshIcon"></i>
+        </button>
+        <button class="hdr-btn" id="privacyBtn" data-i18n-title="hideBalance" title="Hide balance">
+            <i class="fas fa-eye" id="privacyIcon"></i>
+        </button>
+    </header>
+
+    <!-- ============== BODY ============== -->
+    <main class="body">
+
+        <!-- HERO BALANCE -->
+        <div class="hero">
+            <div class="hero-label" data-i18n="totalBalance">Total Balance</div>
+            <div class="hero-value" id="totalBalance">$0</div>
+            <div class="hero-stats">
+                <span><i class="fas fa-wallet"></i><b id="hdrCash">$0</b></span>
+                <span class="dot-sep">·</span>
+                <span><i class="fas fa-folder"></i><b id="hdrAccounts">0</b> <span data-i18n="accounts">accounts</span></span>
+            </div>
+        </div>
+
+        <!-- Frozen pill -->
+        <div class="frozen-pill hidden" id="frozenPill">
+            <div class="fp-l">
+                <i class="fas fa-snowflake"></i>
+                <div>
+                    <div class="fp-label" data-i18n="frozen">Frozen</div>
+                    <div class="fp-value" id="frozenValue">$0</div>
+                </div>
+            </div>
+            <button class="fp-btn" id="claimBtn" data-i18n="claim">Claim</button>
+        </div>
+
+        <!-- HOME -->
+        <section class="page active" data-page="home">
+            <div class="section-title" data-i18n="yourAccounts">Your Accounts</div>
+            <div class="acc-list" id="accList">
+                <div class="empty">
+                    <i class="fas fa-folder-open"></i>
+                    <div data-i18n="noAccounts">No accounts yet</div>
+                    <div class="empty-sub" data-i18n="visitBank">Visit a Fleeca to open one</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEND -->
+        <section class="page" data-page="send">
+            <div class="section-title" data-i18n="sendMoney">Send Money</div>
+
+            <div class="field">
+                <label data-i18n="from">From Account</label>
+                <select id="sendFrom"></select>
+            </div>
+
+            <div class="field">
+                <label data-i18n="recipientType">Recipient</label>
+                <div class="seg" id="sendType">
+                    <button class="seg-btn active" data-tt="phone_contact" data-i18n="phoneContact">Contact</button>
+                    <button class="seg-btn"        data-tt="player_id"     data-i18n="playerId">Player ID</button>
+                    <button class="seg-btn"        data-tt="citizen_id"    data-i18n="citizenId">Citizen ID</button>
+                </div>
+            </div>
+
+            <!-- Manual entry input — shown for player_id / citizen_id -->
+            <div class="field" id="sendTargetWrap">
+                <label id="sendTargetLabel" data-i18n="playerId">Player ID</label>
+                <input type="text" id="sendTarget" placeholder="4" />
+            </div>
+
+            <!-- Phone-contact picker — shown when "Contact" is selected -->
+            <div class="field" id="sendContactWrap">
+                <label data-i18n="phoneContact">Contact</label>
+                <button class="contact-pick-btn" id="contactPickBtn">
+                    <i class="fas fa-address-book"></i>
+                    <span class="cpb-name" id="contactPickedName" data-i18n="tapToChoose">Tap to choose a contact</span>
+                    <span class="cpb-num" id="contactPickedNum"></span>
+                    <i class="fas fa-chevron-right cpb-arrow"></i>
+                </button>
+            </div>
+
+            <div class="field">
+                <label data-i18n="amount">Amount</label>
+                <div class="amt-wrap">
+                    <span class="amt-cur">$</span>
+                    <input type="number" id="sendAmount" min="1" placeholder="0" />
+                </div>
+            </div>
+
+            <div class="field">
+                <label data-i18n="pin">PIN</label>
+                <input type="password" id="sendPin" maxlength="4" placeholder="••••" />
+            </div>
+
+            <button class="btn-primary" id="sendBtn">
+                <i class="fas fa-paper-plane"></i>
+                <span data-i18n="sendBtn">Send Transfer</span>
+            </button>
+            <div class="form-error" id="sendError"></div>
+        </section>
+
+        <!-- HISTORY -->
+        <section class="page" data-page="history">
+            <div class="section-title">
+                <span data-i18n="history">History</span>
+                <select id="histAcc" class="inline-sel"></select>
+            </div>
+            <div class="hist-list" id="histList">
+                <div class="empty">
+                    <i class="fas fa-receipt"></i>
+                    <div data-i18n="noHistory">No transactions</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SETTINGS -->
+        <section class="page" data-page="settings">
+            <!-- Quick actions group -->
+            <div class="group-title" data-i18n="quickActions">Quick Actions</div>
+            <div class="settings-list">
+                <button class="settings-row" id="rowCreateAcc">
+                    <div class="srow-icon teal"><i class="fas fa-plus"></i></div>
+                    <div class="srow-info">
+                        <div class="srow-title" data-i18n="createAccount">Create Account</div>
+                        <div class="srow-sub" data-i18n="createAccountSub">Open a new individual or joint account</div>
+                    </div>
+                    <i class="fas fa-chevron-right srow-arrow"></i>
+                </button>
+                <button class="settings-row hidden" id="rowInvites">
+                    <div class="srow-icon orange"><i class="fas fa-envelope"></i></div>
+                    <div class="srow-info">
+                        <div class="srow-title" data-i18n="pendingInvites">Pending Invitations</div>
+                        <div class="srow-sub" id="invitesSub">0</div>
+                    </div>
+                    <i class="fas fa-chevron-right srow-arrow"></i>
+                </button>
+            </div>
+
+            <!-- Per-account management -->
+            <div class="group-title" data-i18n="manageAccounts">Manage Accounts</div>
+            <div class="settings-list" id="acctMgmtList">
+                <div class="empty">
+                    <i class="fas fa-folder-open"></i>
+                    <div data-i18n="noAccounts">No accounts yet</div>
+                </div>
+            </div>
+
+            <!-- App -->
+            <div class="group-title" data-i18n="app">App</div>
+            <div class="settings-list">
+                <button class="settings-row" id="rowAbout">
+                    <div class="srow-icon blue"><i class="fas fa-circle-info"></i></div>
+                    <div class="srow-info">
+                        <div class="srow-title" data-i18n="aboutApp">About</div>
+                        <div class="srow-sub">Fleeca Bank · v1.0.0</div>
+                    </div>
+                    <i class="fas fa-chevron-right srow-arrow"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- ACCOUNT DETAIL — opened from Settings, has its own back button -->
+        <section class="page" data-page="acct-detail">
+            <header class="sub-hdr">
+                <button class="back-btn" id="acctBack" aria-label="Back">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="sub-hdr-title" id="acctDetTitle">Account</div>
+            </header>
+
+            <!-- Account hero card (with current icon/color) -->
+            <div class="acct-hero" id="acctHero">
+                <div class="acct-hero-icon" id="acctHeroIcon"><i class="fas fa-user"></i></div>
+                <div class="acct-hero-name" id="acctHeroName">—</div>
+                <div class="acct-hero-num"  id="acctHeroNum">—</div>
+                <div class="acct-hero-bal"  id="acctHeroBal">$0</div>
+            </div>
+
+            <div class="settings-list" id="acctActionsList">
+                <!-- Built dynamically per-account in JS -->
+            </div>
+        </section>
+    </main>
+
+    <!-- ============== TAB BAR (bottom-fixed, iOS-like) ============== -->
+    <nav class="tabs">
+        <button class="tab active" data-tab="home">
+            <i class="fas fa-house"></i>
+            <span data-i18n="home">Home</span>
+        </button>
+        <button class="tab" data-tab="send">
+            <i class="fas fa-paper-plane"></i>
+            <span data-i18n="send">Send</span>
+        </button>
+        <button class="tab" data-tab="history">
+            <i class="fas fa-clock-rotate-left"></i>
+            <span data-i18n="history">History</span>
+        </button>
+        <button class="tab" data-tab="settings">
+            <i class="fas fa-gear"></i>
+            <span data-i18n="settings">Settings</span>
+        </button>
+    </nav>
+
+    <!-- ============== MODAL ============== -->
+    <div class="modal hidden" id="modal">
+        <div class="modal-card">
+            <div class="modal-grip"></div>
+            <div class="modal-head">
+                <div class="modal-title" id="modalTitle">Title</div>
+                <button class="modal-x" id="modalClose"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-foot">
+                <button class="btn-ghost"   id="modalCancel" data-i18n="cancel">Cancel</button>
+                <button class="btn-primary" id="modalOk"    data-i18n="confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============== TOAST ============== -->
+    <div class="toast hidden" id="toast"></div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
