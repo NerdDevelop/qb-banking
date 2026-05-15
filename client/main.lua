@@ -227,3 +227,4 @@ end)
 -- /qbbanking — debug command: opens the full bank UI without going to a teller
 RegisterCommand('qbbanking', function() openUI('bank') end, false)
 RegisterCommand('qbatm',  function() openUI('atm')  end, false)
+
