@@ -163,3 +163,4 @@ RegisterCommand('qbbanking_makeaccount', function(src, args)
         adminMsg(src, 'Failed — see server console for the reason')
     end
 end, false)
+
