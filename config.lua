@@ -1,3 +1,8 @@
+-- ╔══════════════════════════════════════════════════════════╗
+-- ║                  qb-banking — by Nerd                    ║
+-- ║          Developed & maintained by Nerd Studio           ║
+-- ║              Released under © Nerd 2026                  ║
+-- ╚══════════════════════════════════════════════════════════╝
 -- =====================================================
 -- qb-banking  (شامل qb-banking-phone — All-in-one)
 -- Author: Sultan
