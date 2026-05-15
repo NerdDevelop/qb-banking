@@ -1,8 +1,3 @@
--- ╔══════════════════════════════════════════════════════════╗
--- ║                  qb-banking — by Nerd                    ║
--- ║          Developed & maintained by Nerd Studio           ║
--- ║              Released under © Nerd 2026                  ║
--- ╚══════════════════════════════════════════════════════════╝
 -- =========================================================
 -- qb-banking schema
 -- Run this once on your MySQL database before starting the resource.
