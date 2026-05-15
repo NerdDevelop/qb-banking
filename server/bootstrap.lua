@@ -206,4 +206,39 @@ end
 -- =========================================================
 local bootstrapped = false
 
-local function runBootst
+local function runBootstrap()
+    if bootstrapped then return end
+    bootstrapped = true
+    print('^3[qb-banking]^7 starting DB bootstrap…')
+    local ok, err = pcall(ensureSchema)
+    if not ok then
+        print(('^1[qb-banking]^7 bootstrap FAILED: %s'):format(tostring(err)))
+    end
+end
+
+-- 1) جرب إذا MySQL.ready موجود (oxmysql الحديث)
+if MySQL and MySQL.ready then
+    MySQL.ready(function()
+        runBootstrap()
+    end)
+else
+    -- 2) fallback — انتظر حتى يصير MySQL متاح
+    CreateThread(function()
+        local tries = 0
+        while not (MySQL and MySQL.query and MySQL.query.await) do
+            tries = tries + 1
+            if tries > 100 then
+                print('^1[qb-banking]^7 bootstrap timeout — MySQL not ready after 10s')
+                return
+            end
+            Wait(100)
+        end
+        runBootstrap()
+    end)
+end
+
+-- 3) تأمين إضافي: لو شي فشل في الحالتين فوق، احتياطياً حاول مرة ثانية بعد 3 ثوان
+CreateThread(function()
+    Wait(3000)
+    runBootstrap()
+end)
