@@ -1,8 +1,3 @@
--- ╔══════════════════════════════════════════════════════════╗
--- ║                  qb-banking — by Nerd                    ║
--- ║          Developed & maintained by Nerd Studio           ║
--- ║              Released under © Nerd 2026                  ║
--- ╚══════════════════════════════════════════════════════════╝
 fx_version 'cerulean'
 game 'gta5'
 lua54 'yes'
@@ -38,4 +33,19 @@ server_scripts {
 ui_page 'html/index.html'
 
 files {
-    'html
+    'html/index.html',
+    'html/style.css',
+    'html/script.js',
+    -- phone app UI (lb-phone iframe)
+    'phone/ui/index.html',
+    'phone/ui/style.css',
+    'phone/ui/script.js',
+}
+
+dependencies {
+    'qb-core',
+    'oxmysql',
+    'ox_lib',
+    'qb-target',
+    -- 'lb-phone' optional — only needed إذا تبي تطبيق الجوال يشتغل
+}
